@@ -24,7 +24,7 @@ def extract_phone_numbers(text):
     return re.findall(r'(?:\+?966|0)?5\d{8}', text)
 
 def extract_emails(text):
-    return re.findall(r'[\w\.-]+@[\w\.-]+.\w+', text)
+    return re.findall(r'[\w\.-]+@[\w\.-]+\.\w+', text)
 
 def extract_name(text):
     for line in text.strip().split('\n'):
@@ -34,8 +34,8 @@ def extract_name(text):
     return "غير معروف"
 
 def send_email(to_email, name):
-    sender_email = "YOUR_EMAIL@gmail.com"
-    sender_password = "YOUR_APP_PASSWORD"
+    sender_email = "zaid.hr.optc@gmail.com"
+    sender_password = "iytzknowcgmzkhbe"
 
     subject = "دعوة لمقابلة عمل"
     body = f"أهلًا {name},\n\nيسعدنا دعوتك لحضور مقابلة عمل يوم الأحد الساعة 10 صباحًا.\n\nتحياتنا،\nفريق الموارد البشرية"
