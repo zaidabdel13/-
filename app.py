@@ -31,10 +31,14 @@ st.markdown("""
         .stTextInput > div > div > input,
         .stTextArea > div > textarea,
         .stDateInput > div,
-        .stSelectbox > div,
-        .stFileUploader > div {
+        .stSelectbox > div {
             background-color: #FDC82F !important;
             color: black !important;
+        }
+        .stFileUploader {
+            background-color: #FDC82F !important;
+            border-radius: 10px !important;
+            padding: 10px !important;
         }
         .stButton > button {
             background-color: #FDC82F;
