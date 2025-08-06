@@ -10,7 +10,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# خلفية بلون أزرق ملكي شفاف + لون الخط أبيض + صناديق برتقالية + مرفقات داخلية زرقاء
+# CSS لتلوين الخلفية والخطوص والصناديق
 st.markdown("""
     <style>
         .stApp {
@@ -28,17 +28,23 @@ st.markdown("""
         label, body, div, p, span {
             color: white !important;
         }
-        .stTextInput > div > div > input,
-        .stTextArea > div > textarea,
-        .stDateInput > div,
-        .stSelectbox > div {
+
+        /* تلوين صناديق الإدخال كاملة */
+        .stTextInput, .stTextArea, .stDateInput, .stSelectbox, .stFileUploader {
+            background-color: #FDC82F !important;
+            border-radius: 10px !important;
+            padding: 8px !important;
+        }
+
+        .stTextInput input,
+        .stTextArea textarea,
+        .stDateInput input,
+        .stSelectbox div,
+        .stFileUploader div {
             background-color: #FDC82F !important;
             color: black !important;
         }
-        .stFileUploader > div div {
-            background-color: #00205B !important;
-            color: white !important;
-        }
+
         .stButton > button {
             background-color: #FDC82F;
             color: #00205B;
