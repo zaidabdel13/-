@@ -1,109 +1,114 @@
 import streamlit as st
 import pandas as pd
 import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import base64
+from email.message import EmailMessage
 from datetime import datetime
 
-# إعداد الصفحة
-st.set_page_config(page_title="إرسال دعوات المقابلة تلقائيًا", layout="centered")
+# شعار الشركة
+st.image("24A1BA1E-0E3F-4F87-A866-2691E01CE1D5.jpeg", width=150)
+st.markdown("<h2 style='text-align: center;'>إرسال دعوات المقابلات تلقائيًا</h2>", unsafe_allow_html=True)
 
-st.title("📩 إرسال دعوات المقابلات تلقائيًا")
+st.header("📤 إرسال جماعي من ملف Excel")
 
-st.markdown("### ✳️ إرسال جماعي من ملف Excel")
-excel_file = st.file_uploader("📤 ارفع ملف Excel", type="xlsx")
-st.markdown("**يجب أن يحتوي الملف على الأعمدة التالية:** `Email`, `التاريخ`, `الوقت`")
+excel_file = st.file_uploader("ارفع ملف Excel يحتوي على Email، التاريخ، الوقت", type=["xlsx"])
+st.divider()
 
-# إعدادات الإيميل
-st.markdown("### ⚙️ إعدادات البريد الإلكتروني")
-sender_email = st.text_input("✉️ الإيميل المرسل", value="zaid.hr.optc@gmail.com")
-app_password = st.text_input("🔑 كلمة مرور التطبيق", type="password")
-company_name = st.text_input("🏢 اسم الشركة", value="شركة تموين الشرق للتجارة")
-location_link = st.text_input("📍رابط الموقع", value="https://maps.app.goo.gl/meqgz4UdRxXAvc7T8")
+st.header("📧 إعدادات البريد الإلكتروني")
+sender_email = st.text_input("الإيميل المرسل", value="", key="sender_email")
+app_password = st.text_input("كلمة مرور التطبيق", type="password", key="app_password")
 
-# إرسال جماعي من Excel
-if excel_file:
-    try:
-        df = pd.read_excel(excel_file)
+st.divider()
+st.header("👤 إدخال يدوي لمرشح")
 
-        if not {'Email', 'التاريخ', 'الوقت'}.issubset(df.columns):
-            st.error("❌ تأكد أن الأعمدة في الملف هي: Email، التاريخ، الوقت.")
-        else:
-            if st.button("📨 إرسال الدعوات"):
-                success, fail = 0, 0
-                for _, row in df.iterrows():
-                    to = row['Email']
-                    date = str(row['التاريخ']).split(' ')[0]
-                    time = row['الوقت']
-                    body = f"""\
+manual_email = st.text_input("البريد الإلكتروني للمرشح")
+manual_date = st.date_input("تاريخ المقابلة", format="YYYY-MM-DD")
+manual_time = st.time_input("وقت المقابلة")
+manual_files = st.file_uploader("رفع السيرة الذاتية (PDF أو Word)", type=["pdf", "docx"], accept_multiple_files=True)
+
+# محتوى الإيميل
+def compose_email_body(date, time):
+    return f"""\
 السلام عليكم ورحمة الله وبركاته،
 
-نشكر لك اهتمامك بالتقدم على وظيفة في {company_name}.
+نشكر لك اهتمامك بالتقدم على وظيفة في شركة تموين الشرق للتجارة .
 يسرنا دعوتك لإجراء مقابلة عمل لمناقشة مؤهلاتك بشكل أوسع والتعرف عليك بشكل أفضل.
 
 تفاصيل المقابلة:
 📅 التاريخ: {date}
 ⏰ الوقت: {time}
-📍الموقع: {location_link}
+📍الموقع: [https://maps.app.goo.gl/meqgz4UdRxXAvc7T8]
 
-نأمل منكم الالتزام بالزي الرسمي السعودي وإحضار نسخة من السيرة الذاتية.
+نأمل منكم الالتزام بالزي الرسمي السعودي واحضار نسخة من السيرة الذاتية.
 
-نتطلع للقائك ونتمنى لك التوفيق.
+نتطلع للقائك ونتمنى لك التوفيق...
 """
 
-                    msg = MIMEMultipart()
-                    msg['From'] = sender_email
-                    msg['To'] = to
-                    msg['Subject'] = "دعوة لحضور مقابلة شخصية"
-                    msg.attach(MIMEText(body, 'plain', _charset='utf-8'))
-
-                    try:
-                        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-                            server.login(sender_email, app_password)
-                            server.sendmail(sender_email, to, msg.as_string())
-                        st.success(f"✅ تم إرسال الدعوة إلى {to}")
-                        success += 1
-                    except Exception as e:
-                        st.warning(f"⚠️ فشل الإرسال إلى {to}: {e}")
-                        fail += 1
-
-                st.info(f"✅ تم الإرسال إلى {success} مرشح / ❌ فشل الإرسال إلى {fail}")
-    except Exception as e:
-        st.error(f"حدث خطأ أثناء قراءة الملف: {e}")
-
-# إدخال يدوي
-st.markdown("---")
-st.markdown("### ✳️ إرسال يدوي لمرشح واحد")
-manual_email = st.text_input("📧 بريد المرشح")
-manual_date = st.date_input("📅 تاريخ المقابلة")
-manual_time = st.time_input("⏰ وقت المقابلة")
-
-if st.button("📨 إرسال الدعوة يدويًا"):
-    body = f"""\
-السلام عليكم ورحمة الله وبركاته،
-
-نشكر لك اهتمامك بالتقدم على وظيفة في {company_name}.
-يسرنا دعوتك لإجراء مقابلة عمل لمناقشة مؤهلاتك بشكل أوسع والتعرف عليك بشكل أفضل.
-
-تفاصيل المقابلة:
-📅 التاريخ: {manual_date}
-⏰ الوقت: {manual_time.strftime('%H:%M')}
-📍الموقع: {location_link}
-
-نأمل منكم الالتزام بالزي الرسمي السعودي وإحضار نسخة من السيرة الذاتية.
-
-نتطلع للقائك ونتمنى لك التوفيق.
-"""
-    msg = MIMEMultipart()
-    msg['From'] = sender_email
-    msg['To'] = manual_email
-    msg['Subject'] = "دعوة لحضور مقابلة شخصية"
-    msg.attach(MIMEText(body, 'plain', _charset='utf-8'))
-
+def send_email(receiver, subject, body, sender_email, app_password, attachments=[]):
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(sender_email, app_password)
-            server.sendmail(sender_email, manual_email, msg.as_string())
-        st.success("✅ تم إرسال الدعوة بنجاح.")
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"] = sender_email
+        msg["To"] = receiver
+        msg.set_content(body)
+        msg.set_charset('utf-8')
+
+        for file in attachments:
+            file_data = file.read()
+            file_name = file.name
+            msg.add_attachment(file_data, maintype="application", subtype="octet-stream", filename=file_name)
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+            smtp.login(sender_email, app_password)
+            smtp.send_message(msg)
+        return True
     except Exception as e:
-        st.error(f"❌ فشل الإرسال: {e}")
+        st.warning(f"فشل الإرسال إلى {receiver}: {e}")
+        return False
+
+# إرسال يدوي
+if st.button("📨 إرسال الدعوة اليدوية"):
+    if manual_email and manual_date and manual_time:
+        formatted_date = manual_date.strftime("%Y-%m-%d")
+        formatted_time = manual_time.strftime("%I:%M %p")
+        body = compose_email_body(formatted_date, formatted_time)
+        result = send_email(
+            receiver=manual_email,
+            subject="دعوة لمقابلة وظيفية",
+            body=body,
+            sender_email=sender_email,
+            app_password=app_password,
+            attachments=manual_files
+        )
+        if result:
+            st.success("تم إرسال الدعوة بنجاح.")
+    else:
+        st.warning("يرجى تعبئة جميع الحقول.")
+
+# إرسال جماعي
+if st.button("📤 إرسال الدعوات من ملف Excel"):
+    if excel_file is not None:
+        df = pd.read_excel(excel_file)
+
+        required_cols = ["Email", "التاريخ", "الوقت"]
+        if not all(col in df.columns for col in required_cols):
+            st.error("❌ تأكد أن الأعمدة في الملف هي: Email ، التاريخ ، الوقت")
+        else:
+            success_count = 0
+            for _, row in df.iterrows():
+                email = row["Email"]
+                date = str(row["التاريخ"])
+                time = str(row["الوقت"])
+                body = compose_email_body(date, time)
+                if send_email(
+                    receiver=email,
+                    subject="دعوة لمقابلة وظيفية",
+                    body=body,
+                    sender_email=sender_email,
+                    app_password=app_password
+                ):
+                    success_count += 1
+
+            st.success(f"✅ تم إرسال الدعوات إلى {success_count} مرشح بنجاح.")
+    else:
+        st.warning("يرجى رفع ملف Excel أولاً.")
