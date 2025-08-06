@@ -113,3 +113,52 @@ if st.button("📨 إرسال يدوي"):
             st.error(f"⚠️ فشل الإرسال: {e}")
     else:
         st.warning("الرجاء تعبئة جميع الحقول.")
+import streamlit as st
+
+st.markdown(
+    """
+    <style>
+    /* الخلفية */
+    .stApp {
+        background-color: #f4f4f4;
+    }
+
+    /* العنوان */
+    h1, h2, h3 {
+        color: #00205B;
+    }
+
+    /* الأزرار */
+    div.stButton > button {
+        background-color: #FDC82F;
+        color: #00205B;
+        border: none;
+        padding: 0.6em 1.2em;
+        border-radius: 6px;
+        font-weight: bold;
+    }
+    div.stButton > button:hover {
+        background-color: #e0b122;
+        color: white;
+    }
+
+    /* مربعات الإدخال */
+    .stTextInput > div > div > input,
+    .stTextArea > div > textarea,
+    .stDateInput > div,
+    .stSelectbox > div {
+        background-color: white;
+        border: 2px solid #8C6239;
+        border-radius: 4px;
+        color: #00205B;
+    }
+
+    /* تسميات الحقول */
+    label {
+        font-weight: 600;
+        color: #00205B;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
