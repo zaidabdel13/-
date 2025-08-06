@@ -10,7 +10,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# CSS لتلوين الخلفية والخطوص والصناديق
+# تنسيقات CSS
 st.markdown("""
     <style>
         .stApp {
@@ -28,23 +28,17 @@ st.markdown("""
         label, body, div, p, span {
             color: white !important;
         }
-
-        /* تلوين صناديق الإدخال كاملة */
-        .stTextInput, .stTextArea, .stDateInput, .stSelectbox, .stFileUploader {
-            background-color: #FDC82F !important;
-            border-radius: 10px !important;
-            padding: 8px !important;
-        }
-
-        .stTextInput input,
-        .stTextArea textarea,
-        .stDateInput input,
-        .stSelectbox div,
-        .stFileUploader div {
+        .stTextInput > div > div > input,
+        .stTextArea > div > textarea,
+        .stDateInput > div,
+        .stSelectbox > div,
+        .stFileUploader > div,
+        .stFileUploader {
             background-color: #FDC82F !important;
             color: black !important;
+            border-radius: 10px !important;
+            padding: 10px !important;
         }
-
         .stButton > button {
             background-color: #FDC82F;
             color: #00205B;
@@ -92,7 +86,7 @@ if st.button("📨 إرسال جماعي"):
 نأمل منكم الالتزام بالزي الرسمي السعودي واحضار نسخة من السيرة الذاتية.
 
 نتطلع للقائك ونتمنى لك التوفيق....
-""", charset="utf-8")
+""")
 
                 with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
                     smtp.login(sender_email, app_password)
@@ -138,7 +132,7 @@ if send_btn:
 نأمل منكم الالتزام بالزي الرسمي السعودي واحضار نسخة من السيرة الذاتية.
 
 نتطلع للقائك ونتمنى لك التوفيق....
-""", charset="utf-8")
+""")
 
         if m_resume is not None:
             resume_data = m_resume.read()
