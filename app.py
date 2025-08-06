@@ -5,9 +5,8 @@ from docx import Document
 import io
 
 st.set_page_config(page_title="CV Extractor", layout="centered")
-
 st.title("📄 مستخرج السير الذاتية الذكي")
-st.write("ارفع السيرة الذاتية (PDF أو Word) وسنستخرج لك رقم الجوال والبريد الإلكتروني.")
+st.write("ارفع السيرة الذاتية (PDF أو Word)، وسنستخرج لك اسم المتقدم، رقم الجوال، والبريد الإلكتروني.")
 
 uploaded_file = st.file_uploader("ارفع السيرة الذاتية هنا", type=["pdf", "docx"])
 
@@ -30,6 +29,14 @@ def extract_emails(text):
     pattern = r'[\w\.-]+@[\w\.-]+\.\w+'
     return re.findall(pattern, text)
 
+def extract_name(text):
+    lines = text.strip().split('\n')
+    for line in lines:
+        line = line.strip()
+        if len(line.split()) >= 2 and not any(char.isdigit() for char in line):
+            return line
+    return "غير معروف"
+
 if uploaded_file:
     file_type = uploaded_file.name.lower()
     
@@ -41,9 +48,13 @@ if uploaded_file:
         st.error("صيغة الملف غير مدعومة.")
         st.stop()
     
+    name = extract_name(text)
     phones = extract_phone_numbers(text)
     emails = extract_emails(text)
     
+    st.subheader("🧑‍💼 اسم المتقدم:")
+    st.write(name)
+
     st.subheader("📱 أرقام الجوال:")
     if phones:
         for phone in set(phones):
