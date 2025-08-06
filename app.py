@@ -1,3 +1,7 @@
+from pathlib import Path
+
+# الكود الكامل مع لون الخط الأبيض وخلفية ملكية
+code = """
 import streamlit as st
 import pandas as pd
 import smtplib
@@ -10,8 +14,8 @@ st.set_page_config(
     layout="centered"
 )
 
-# خلفية بلون أزرق ملكي شفاف
-st.markdown("""
+# خلفية بلون أزرق ملكي شفاف + لون خط أبيض
+st.markdown(\"""
     <style>
         .stApp {
             background: linear-gradient(
@@ -28,6 +32,9 @@ st.markdown("""
         label {
             color: white;
         }
+        body, div, p, span {
+            color: white !important;
+        }
         .stTextInput > div > div > input,
         .stTextArea > div > textarea,
         .stDateInput > div,
@@ -41,7 +48,7 @@ st.markdown("""
             font-weight: bold;
         }
     </style>
-""", unsafe_allow_html=True)
+\""", unsafe_allow_html=True)
 
 st.markdown("## 📨 نظام إرسال دعوات المقابلات - تموين الشرق")
 
@@ -68,7 +75,7 @@ if st.button("📨 إرسال جماعي"):
                 msg['From'] = sender_email
                 msg['To'] = row['email']
 
-                msg.set_content(f"""\
+                msg.set_content(f\"""\
 السلام عليكم ورحمة الله وبركاته،
 
 نشكر لك اهتمامك بالتقدم على وظيفة في شركة تموين الشرق للتجارة.
@@ -82,7 +89,7 @@ if st.button("📨 إرسال جماعي"):
 نأمل منكم الالتزام بالزي الرسمي السعودي واحضار نسخة من السيرة الذاتية.
 
 نتطلع للقائك ونتمنى لك التوفيق....
-""", charset="utf-8")
+\""", charset="utf-8")
 
                 with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
                     smtp.login(sender_email, app_password)
@@ -114,7 +121,7 @@ if send_btn:
         msg['From'] = sender_email
         msg['To'] = m_email
 
-        msg.set_content(f"""\
+        msg.set_content(f\"""\
 السلام عليكم ورحمة الله وبركاته،
 
 نشكر لك اهتمامك بالتقدم على وظيفة في شركة تموين الشرق للتجارة.
@@ -128,7 +135,7 @@ if send_btn:
 نأمل منكم الالتزام بالزي الرسمي السعودي واحضار نسخة من السيرة الذاتية.
 
 نتطلع للقائك ونتمنى لك التوفيق....
-""", charset="utf-8")
+\""", charset="utf-8")
 
         if m_resume is not None:
             resume_data = m_resume.read()
@@ -141,9 +148,14 @@ if send_btn:
         st.success("✅ تم إرسال الدعوة بنجاح.")
     except Exception as e:
         st.error(f"❌ فشل الإرسال: {e}")
-body, div, p, span {
-    color: white !important;
-}
+
 # تذييل
 st.markdown("---")
 st.caption("تم التطوير بواسطة زايد العبدلي ❤️")
+"""
+
+# حفظ الملف
+output_path = "/mnt/data/app_tamween_final.py"
+Path(output_path).write_text(code)
+
+output_path
