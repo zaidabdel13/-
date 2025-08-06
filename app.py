@@ -5,12 +5,17 @@ from docx import Document
 import io
 import smtplib
 from email.mime.text import MIMEText
+from datetime import datetime
 
 st.set_page_config(page_title="CV Extractor + Email", layout="centered")
 st.title("📄 مستخرج السير الذاتية الذكي + دعوة عبر الإيميل")
-st.write("ارفع السيرة الذاتية (PDF أو Word)، واستخرج الاسم، رقم الجوال، الإيميل، ثم أرسل دعوة تلقائيًا.")
+st.write("ارفع السيرة الذاتية (PDF أو Word)، واستخرج البيانات، وحدد وقت وتاريخ المقابلة ثم أرسل دعوة بالإيميل.")
 
 uploaded_file = st.file_uploader("ارفع السيرة الذاتية هنا", type=["pdf", "docx"])
+
+# مدخلات التاريخ والوقت
+date_input = st.date_input("📅 تاريخ المقابلة", format="YYYY-MM-DD")
+time_input = st.time_input("⏰ وقت المقابلة")
 
 def extract_text_from_pdf(file):
     reader = PyPDF2.PdfReader(file)
@@ -33,19 +38,19 @@ def extract_name(text):
             return line
     return "غير معروف"
 
-def send_email(to_email):
+def send_email(to_email, date_str, time_str):
     sender_email = "zaid.hr.optc@gmail.com"
     sender_password = "pjxmoytkvtslfcvb"
 
     subject = "دعوة لمقابلة عمل"
-    body = """السلام عليكم ورحمة الله وبركاته،
+    body = f"""السلام عليكم ورحمة الله وبركاته،
 
 نشكر لك اهتمامك بالتقدم على وظيفة في شركة تموين الشرق للتجارة.
 يسرنا دعوتك لإجراء مقابلة عمل لمناقشة مؤهلاتك بشكل أوسع والتعرف عليك بشكل أفضل.
 
 تفاصيل المقابلة:
-📅 التاريخ: [غداً]
-⏰ الوقت: [10:00 صباحاً]
+📅 التاريخ: {date_str}
+⏰ الوقت: {time_str}
 📍 الموقع: https://maps.app.goo.gl/meqgz4UdRxXAvc7T8
 
 نأمل منكم الالتزام بالزي الرسمي السعودي واحضار نسخة من السيرة الذاتية.
@@ -86,5 +91,7 @@ if uploaded_file:
 
     if emails:
         if st.button("✉️ إرسال دعوة عبر الإيميل"):
-            result = send_email(emails[0])
+            date_str = date_input.strftime("%Y-%m-%d")
+            time_str = time_input.strftime("%I:%M %p")
+            result = send_email(emails[0], date_str, time_str)
             st.success("📩 تم إرسال الدعوة.") if result is True else st.error(f"خطأ: {result}")
