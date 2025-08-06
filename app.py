@@ -1,151 +1,59 @@
 import streamlit as st
-import pandas as pd
-import smtplib
-from email.message import EmailMessage
-from datetime import datetime
+import PyPDF2
+import re
+from docx import Document
+import io
 
-# إعدادات الصفحة
-st.set_page_config(
-    page_title="نظام دعوات المقابلة - تموين الشرق",
-    layout="centered"
-)
+st.set_page_config(page_title="CV Extractor", layout="centered")
 
-# تنسيقات CSS
-st.markdown("""
-    <style>
-        .stApp {
-            background: linear-gradient(
-                135deg,
-                rgba(0, 32, 91, 0.85),
-                rgba(44, 62, 117, 0.85)
-            );
-            background-attachment: fixed;
-        }
-        h1, h2, h3 {
-            color: #FDC82F;
-            text-align: center;
-        }
-        label, body, div, p, span {
-            color: white !important;
-        }
-        .stTextInput > div > div > input,
-        .stTextArea > div > textarea,
-        .stDateInput > div,
-        .stSelectbox > div,
-        .stFileUploader > div,
-        .stFileUploader {
-            background-color: #FDC82F !important;
-            color: black !important;
-            border-radius: 10px !important;
-            padding: 10px !important;
-        }
-        .stButton > button {
-            background-color: #FDC82F;
-            color: #00205B;
-            font-weight: bold;
-        }
-    </style>
-""", unsafe_allow_html=True)
+st.title("📄 مستخرج السير الذاتية الذكي")
+st.write("ارفع السيرة الذاتية (PDF أو Word) وسنستخرج لك رقم الجوال والبريد الإلكتروني.")
 
-st.markdown("## 📨 نظام إرسال دعوات المقابلات - تموين الشرق")
+uploaded_file = st.file_uploader("ارفع السيرة الذاتية هنا", type=["pdf", "docx"])
 
-# إدخال بيانات البريد
-st.subheader("📧 بيانات البريد المرسل")
-sender_email = st.text_input("الإيميل المرسل (Gmail)")
-app_password = st.text_input("كلمة مرور التطبيق", type="password")
+def extract_text_from_pdf(file):
+    reader = PyPDF2.PdfReader(file)
+    text = ''
+    for page in reader.pages:
+        text += page.extract_text()
+    return text
 
-# رفع ملف Excel
-st.subheader("📂 إرسال جماعي من ملف Excel")
-excel_file = st.file_uploader("ارفع ملف Excel يحتوي على الأعمدة: email, date, time", type=["xlsx"])
+def extract_text_from_docx(file):
+    doc = Document(file)
+    return '\n'.join([para.text for para in doc.paragraphs])
 
-if st.button("📨 إرسال جماعي"):
-    if not excel_file:
-        st.warning("⚠️ الرجاء رفع ملف Excel أولاً.")
+def extract_phone_numbers(text):
+    pattern = r'(?:\+?966|0)?5\d{8}'
+    return re.findall(pattern, text)
+
+def extract_emails(text):
+    pattern = r'[\w\.-]+@[\w\.-]+\.\w+'
+    return re.findall(pattern, text)
+
+if uploaded_file:
+    file_type = uploaded_file.name.lower()
+    
+    if file_type.endswith(".pdf"):
+        text = extract_text_from_pdf(uploaded_file)
+    elif file_type.endswith(".docx"):
+        text = extract_text_from_docx(uploaded_file)
     else:
-        df = pd.read_excel(excel_file)
-        success, failed = 0, 0
+        st.error("صيغة الملف غير مدعومة.")
+        st.stop()
+    
+    phones = extract_phone_numbers(text)
+    emails = extract_emails(text)
+    
+    st.subheader("📱 أرقام الجوال:")
+    if phones:
+        for phone in set(phones):
+            st.write(f"- {phone}")
+    else:
+        st.write("لا يوجد رقم جوال.")
 
-        for _, row in df.iterrows():
-            try:
-                msg = EmailMessage()
-                msg['Subject'] = "دعوة لحضور مقابلة عمل"
-                msg['From'] = sender_email
-                msg['To'] = row['email']
-
-                msg.set_content(f"""\
-السلام عليكم ورحمة الله وبركاته،
-
-نشكر لك اهتمامك بالتقدم على وظيفة في شركة تموين الشرق للتجارة.
-يسرنا دعوتك لإجراء مقابلة عمل لمناقشة مؤهلاتك بشكل أوسع والتعرف عليك بشكل أفضل.
-
-تفاصيل المقابلة:
-📅 التاريخ: {row['date']}
-⏰ الوقت: {row['time']}
-📍الموقع: https://maps.app.goo.gl/meqgz4UdRxXAvc7T8
-
-نأمل منكم الالتزام بالزي الرسمي السعودي واحضار نسخة من السيرة الذاتية.
-
-نتطلع للقائك ونتمنى لك التوفيق....
-""", charset="utf-8")
-
-                with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-                    smtp.login(sender_email, app_password)
-                    smtp.send_message(msg)
-
-                success += 1
-            except Exception as e:
-                failed += 1
-                st.error(f"فشل الإرسال إلى {row['email']}: {e}")
-
-        st.success(f"✅ تم إرسال {success} دعوة بنجاح.")
-        if failed > 0:
-            st.warning(f"❌ فشل إرسال {failed} دعوة.")
-
-# إرسال يدوي لمرشح واحد
-st.subheader("👤 إرسال يدوي لمرشح واحد")
-
-with st.form("manual_form"):
-    m_email = st.text_input("إيميل المرشح")
-    m_date = st.date_input("تاريخ المقابلة")
-    m_time = st.time_input("وقت المقابلة")
-    m_resume = st.file_uploader("ارفع السيرة الذاتية", type=["pdf", "docx", "doc"], key="manual_resume")
-    send_btn = st.form_submit_button("📤 إرسال الدعوة")
-
-if send_btn:
-    try:
-        msg = EmailMessage()
-        msg['Subject'] = "دعوة لحضور مقابلة عمل"
-        msg['From'] = sender_email
-        msg['To'] = m_email
-
-        msg.set_content(f"""\
-السلام عليكم ورحمة الله وبركاته،
-
-نشكر لك اهتمامك بالتقدم على وظيفة في شركة تموين الشرق للتجارة.
-يسرنا دعوتك لإجراء مقابلة عمل لمناقشة مؤهلاتك بشكل أوسع والتعرف عليك بشكل أفضل.
-
-تفاصيل المقابلة:
-📅 التاريخ: {m_date}
-⏰ الوقت: {m_time}
-📍الموقع: https://maps.app.goo.gl/meqgz4UdRxXAvc7T8
-
-نأمل منكم الالتزام بالزي الرسمي السعودي واحضار نسخة من السيرة الذاتية.
-
-نتطلع للقائك ونتمنى لك التوفيق....
-""", charset="utf-8")
-
-        if m_resume is not None:
-            resume_data = m_resume.read()
-            msg.add_attachment(resume_data, maintype="application", subtype="octet-stream", filename=m_resume.name)
-
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-            smtp.login(sender_email, app_password)
-            smtp.send_message(msg)
-
-        st.success("✅ تم إرسال الدعوة بنجاح.")
-    except Exception as e:
-        st.error(f"❌ فشل الإرسال: {e}")
-
-# تذييل
-st.markdown("---")
-st.caption("تم التطوير بواسطة زايد العبدلي ❤️")
+    st.subheader("📧 الإيميلات:")
+    if emails:
+        for email in set(emails):
+            st.write(f"- {email}")
+    else:
+        st.write("لا يوجد بريد إلكتروني.")
