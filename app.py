@@ -9,11 +9,10 @@ from datetime import datetime
 
 st.set_page_config(page_title="CV Extractor + Email", layout="centered")
 st.title("📄 مستخرج السير الذاتية الذكي + دعوة عبر الإيميل")
-st.write("ارفع السيرة الذاتية (PDF أو Word)، واستخرج البيانات، وحدد وقت وتاريخ المقابلة ثم أرسل دعوة بالإيميل.")
+st.write("ارفع السيرة الذاتية، عدل البيانات، واختر وقت المقابلة ثم أرسل الدعوة.")
 
 uploaded_file = st.file_uploader("ارفع السيرة الذاتية هنا", type=["pdf", "docx"])
 
-# مدخلات التاريخ والوقت
 date_input = st.date_input("📅 تاريخ المقابلة", format="YYYY-MM-DD")
 time_input = st.time_input("⏰ وقت المقابلة")
 
@@ -83,15 +82,18 @@ if uploaded_file:
     st.subheader("🧑‍💼 اسم المتقدم:")
     st.write(name)
 
-    st.subheader("📱 أرقام الجوال:")
-    st.write(phones if phones else "لا يوجد رقم جوال.")
+    # Editable email and phone
+    default_email = emails[0] if emails else ""
+    default_phone = phones[0] if phones else ""
 
-    st.subheader("📧 الإيميلات:")
-    st.write(emails if emails else "لا يوجد بريد إلكتروني.")
+    email_input = st.text_input("📧 الإيميل (يمكنك التعديل):", value=default_email)
+    phone_input = st.text_input("📱 رقم الجوال (يمكنك التعديل):", value=default_phone)
 
-    if emails:
-        if st.button("✉️ إرسال دعوة عبر الإيميل"):
+    if st.button("✉️ إرسال دعوة عبر الإيميل"):
+        if email_input.strip() == "":
+            st.error("🚫 الرجاء إدخال بريد إلكتروني.")
+        else:
             date_str = date_input.strftime("%Y-%m-%d")
             time_str = time_input.strftime("%I:%M %p")
-            result = send_email(emails[0], date_str, time_str)
-            st.success("📩 تم إرسال الدعوة.") if result is True else st.error(f"خطأ: {result}")
+            result = send_email(email_input.strip(), date_str, time_str)
+            st.success("📩 تم إرسال الدعوة.") if result is True else st.error(f"حدث خطأ أثناء الإرسال: {result}")
