@@ -31,7 +31,8 @@ st.markdown("""
         .stTextInput > div > div > input,
         .stTextArea > div > textarea,
         .stDateInput > div,
-        .stSelectbox > div {
+        .stSelectbox > div,
+        .stFileUploader > div {
             background-color: #FDC82F !important;
             color: black !important;
         }
