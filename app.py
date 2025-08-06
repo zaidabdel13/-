@@ -10,7 +10,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# خلفية بلون أزرق ملكي شفاف + لون الخط أبيض
+# خلفية بلون أزرق ملكي شفاف + لون الخط أبيض + صناديق برتقالية
 st.markdown("""
     <style>
         .stApp {
@@ -32,8 +32,8 @@ st.markdown("""
         .stTextArea > div > textarea,
         .stDateInput > div,
         .stSelectbox > div {
-            background-color: white;
-            color: black;
+            background-color: #FDC82F !important;
+            color: black !important;
         }
         .stButton > button {
             background-color: #FDC82F;
