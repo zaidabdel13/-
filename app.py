@@ -6,9 +6,18 @@ from email.mime.text import MIMEText
 from datetime import datetime
 
 # إعداد الصفحة
-st.set_page_config(page_title="إرسال دعوات المقابلة تلقائيًا", layout="centered")
+st.set_page_config(page_title="إرسال دعوات المقابلات تلقائياً - شركة تموين الشرق", layout="centered")
 
-st.title("📩 إرسال دعوات المقابلات تلقائيًا")
+# خلفية صفراء غامقة
+st.markdown("""
+    <style>
+        .stApp {
+            background-color: #FDC82F !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+st.title("📩 إرسال دعوات المقابلات تلقائياً - شركة تموين الشرق")
 
 st.markdown("### ✳️ إرسال جماعي من ملف Excel")
 excel_file = st.file_uploader("📤 ارفع ملف Excel", type="xlsx")
