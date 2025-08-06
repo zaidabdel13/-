@@ -10,7 +10,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# خلفية بلون أزرق ملكي شفاف
+# خلفية بلون أزرق ملكي شفاف + لون الخط أبيض
 st.markdown("""
     <style>
         .stApp {
@@ -25,8 +25,8 @@ st.markdown("""
             color: #FDC82F;
             text-align: center;
         }
-        label {
-            color: white;
+        label, body, div, p, span {
+            color: white !important;
         }
         .stTextInput > div > div > input,
         .stTextArea > div > textarea,
