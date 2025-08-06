@@ -7,14 +7,11 @@ import smtplib
 from email.mime.text import MIMEText
 from datetime import datetime
 
-st.set_page_config(page_title="CV Extractor + Email", layout="centered")
-st.title("📄 مستخرج السير الذاتية الذكي + دعوة عبر الإيميل")
-st.write("ارفع السيرة الذاتية، عدل البيانات، واختر وقت المقابلة ثم أرسل الدعوة.")
+st.set_page_config(page_title="معالج سير ذاتية جماعي + إرسال إيميلات", layout="centered")
+st.title("📄 مستخرج السير الذاتية الذكي (يدعم ملفات متعددة)")
+st.write("ارفع أكثر من سيرة ذاتية، عدل البيانات، واختر وقت المقابلة ثم أرسل دعوات المرشحين بالإيميل.")
 
-uploaded_file = st.file_uploader("ارفع السيرة الذاتية هنا", type=["pdf", "docx"])
-
-date_input = st.date_input("📅 تاريخ المقابلة", format="YYYY-MM-DD")
-time_input = st.time_input("⏰ وقت المقابلة")
+uploaded_files = st.file_uploader("🗂 ارفع السير الذاتية هنا (PDF أو Word)", type=["pdf", "docx"], accept_multiple_files=True)
 
 def extract_text_from_pdf(file):
     reader = PyPDF2.PdfReader(file)
@@ -71,29 +68,30 @@ def send_email(to_email, date_str, time_str):
     except Exception as e:
         return str(e)
 
-if uploaded_file:
-    file_bytes = uploaded_file.read()
-    file_type = uploaded_file.name.lower()
-    text = extract_text_from_pdf(io.BytesIO(file_bytes)) if file_type.endswith(".pdf") else extract_text_from_docx(io.BytesIO(file_bytes))
-    name = extract_name(text)
-    phones = extract_phone_numbers(text)
-    emails = extract_emails(text)
+if uploaded_files:
+    for uploaded_file in uploaded_files:
+        with st.expander(f"📄 {uploaded_file.name}"):
+            file_bytes = uploaded_file.read()
+            file_type = uploaded_file.name.lower()
+            text = extract_text_from_pdf(io.BytesIO(file_bytes)) if file_type.endswith(".pdf") else extract_text_from_docx(io.BytesIO(file_bytes))
+            
+            name = extract_name(text)
+            phones = extract_phone_numbers(text)
+            emails = extract_emails(text)
 
-    st.subheader("🧑‍💼 اسم المتقدم:")
-    st.write(name)
+            st.write("👤 الاسم:", name)
 
-    # Editable email and phone
-    default_email = emails[0] if emails else ""
-    default_phone = phones[0] if phones else ""
+            # مدخلات قابلة للتعديل
+            email_input = st.text_input("📧 البريد الإلكتروني:", value=emails[0] if emails else "", key=uploaded_file.name + "_email")
+            phone_input = st.text_input("📱 رقم الجوال:", value=phones[0] if phones else "", key=uploaded_file.name + "_phone")
+            date_input = st.date_input("📅 تاريخ المقابلة:", key=uploaded_file.name + "_date")
+            time_input = st.time_input("⏰ وقت المقابلة:", key=uploaded_file.name + "_time")
 
-    email_input = st.text_input("📧 الإيميل (يمكنك التعديل):", value=default_email)
-    phone_input = st.text_input("📱 رقم الجوال (يمكنك التعديل):", value=default_phone)
-
-    if st.button("✉️ إرسال دعوة عبر الإيميل"):
-        if email_input.strip() == "":
-            st.error("🚫 الرجاء إدخال بريد إلكتروني.")
-        else:
-            date_str = date_input.strftime("%Y-%m-%d")
-            time_str = time_input.strftime("%I:%M %p")
-            result = send_email(email_input.strip(), date_str, time_str)
-            st.success("📩 تم إرسال الدعوة.") if result is True else st.error(f"حدث خطأ أثناء الإرسال: {result}")
+            if st.button("✉️ إرسال الدعوة", key=uploaded_file.name + "_send"):
+                if email_input.strip() == "":
+                    st.error("🚫 البريد الإلكتروني فارغ.")
+                else:
+                    date_str = date_input.strftime("%Y-%m-%d")
+                    time_str = time_input.strftime("%I:%M %p")
+                    result = send_email(email_input.strip(), date_str, time_str)
+                    st.success("📩 تم إرسال الدعوة.") if result is True else st.error(f"❌ فشل الإرسال: {result}")
