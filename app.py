@@ -6,13 +6,23 @@ import io
 import smtplib
 from email.mime.text import MIMEText
 from datetime import datetime
+import pandas as pd
 
-st.set_page_config(page_title="معالج سير ذاتية جماعي + إرسال إيميلات", layout="centered")
-st.title("📄 مستخرج السير الذاتية الذكي (يدعم ملفات متعددة)")
-st.write("ارفع أكثر من سيرة ذاتية، عدل البيانات، واختر وقت المقابلة ثم أرسل دعوات المرشحين بالإيميل.")
+st.set_page_config(page_title="نظام المقابلات الذكي", layout="centered")
+st.title("📄 مستخرج السير الذاتية الذكي + إرسال جماعي")
+st.write("ارفع سير ذاتية أو ملف Excel فيه إيميلات، واختر الوقت والتاريخ، ثم أرسل الدعوة للجميع.")
 
-uploaded_files = st.file_uploader("🗂 ارفع السير الذاتية هنا (PDF أو Word)", type=["pdf", "docx"], accept_multiple_files=True)
+# رفع ملف Excel لإرسال جماعي
+excel_file = st.file_uploader("📋 أو ارفع ملف Excel فيه الإيميلات (عمود اسمه Email)", type=["xlsx"])
 
+# رفع سير ذاتية متعددة
+uploaded_files = st.file_uploader("🗂 أو ارفع السير الذاتية (PDF أو Word)", type=["pdf", "docx"], accept_multiple_files=True)
+
+# إدخال التاريخ والوقت
+date_input = st.date_input("📅 تاريخ المقابلة", format="YYYY-MM-DD")
+time_input = st.time_input("⏰ وقت المقابلة")
+
+# دوال استخراج
 def extract_text_from_pdf(file):
     reader = PyPDF2.PdfReader(file)
     return ''.join(page.extract_text() for page in reader.pages if page.extract_text())
@@ -34,6 +44,7 @@ def extract_name(text):
             return line
     return "غير معروف"
 
+# إرسال الإيميل
 def send_email(to_email, date_str, time_str):
     sender_email = "zaid.hr.optc@gmail.com"
     sender_password = "pjxmoytkvtslfcvb"
@@ -68,26 +79,43 @@ def send_email(to_email, date_str, time_str):
     except Exception as e:
         return str(e)
 
+# إرسال جماعي من ملف Excel
+if excel_file:
+    try:
+        df = pd.read_excel(excel_file)
+        if 'Email' in df.columns:
+            st.success(f"✅ تم العثور على {len(df)} بريد إلكتروني في الملف.")
+            if st.button("✉️ إرسال جماعي الآن"):
+                date_str = date_input.strftime("%Y-%m-%d")
+                time_str = time_input.strftime("%I:%M %p")
+                success_count = 0
+                for email in df['Email'].dropna():
+                    result = send_email(email.strip(), date_str, time_str)
+                    if result is True:
+                        success_count += 1
+                st.success(f"📨 تم إرسال الدعوة إلى {success_count} مرشح بنجاح.")
+        else:
+            st.error("❌ الملف لا يحتوي على عمود باسم 'Email'.")
+    except Exception as e:
+        st.error(f"❌ خطأ في قراءة ملف Excel: {e}")
+
+# معالجة السير الذاتية
 if uploaded_files:
     for uploaded_file in uploaded_files:
         with st.expander(f"📄 {uploaded_file.name}"):
             file_bytes = uploaded_file.read()
             file_type = uploaded_file.name.lower()
             text = extract_text_from_pdf(io.BytesIO(file_bytes)) if file_type.endswith(".pdf") else extract_text_from_docx(io.BytesIO(file_bytes))
-            
+
             name = extract_name(text)
             phones = extract_phone_numbers(text)
             emails = extract_emails(text)
 
             st.write("👤 الاسم:", name)
-
-            # مدخلات قابلة للتعديل
             email_input = st.text_input("📧 البريد الإلكتروني:", value=emails[0] if emails else "", key=uploaded_file.name + "_email")
             phone_input = st.text_input("📱 رقم الجوال:", value=phones[0] if phones else "", key=uploaded_file.name + "_phone")
-            date_input = st.date_input("📅 تاريخ المقابلة:", key=uploaded_file.name + "_date")
-            time_input = st.time_input("⏰ وقت المقابلة:", key=uploaded_file.name + "_time")
 
-            if st.button("✉️ إرسال الدعوة", key=uploaded_file.name + "_send"):
+            if st.button("✉️ إرسال لهذا المرشح", key=uploaded_file.name + "_send"):
                 if email_input.strip() == "":
                     st.error("🚫 البريد الإلكتروني فارغ.")
                 else:
