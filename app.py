@@ -141,7 +141,9 @@ if send_btn:
         st.success("✅ تم إرسال الدعوة بنجاح.")
     except Exception as e:
         st.error(f"❌ فشل الإرسال: {e}")
-
+body, div, p, span {
+    color: white !important;
+}
 # تذييل
 st.markdown("---")
 st.caption("تم التطوير بواسطة زايد العبدلي ❤️")
