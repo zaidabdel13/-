@@ -10,7 +10,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# خلفية بلون أزرق ملكي شفاف + لون الخط أبيض + صناديق برتقالية
+# خلفية بلون أزرق ملكي شفاف + لون الخط أبيض + صناديق برتقالية + مرفقات داخلية زرقاء
 st.markdown("""
     <style>
         .stApp {
@@ -35,10 +35,9 @@ st.markdown("""
             background-color: #FDC82F !important;
             color: black !important;
         }
-        .stFileUploader {
-            background-color: #FDC82F !important;
-            border-radius: 10px !important;
-            padding: 10px !important;
+        .stFileUploader > div div {
+            background-color: #00205B !important;
+            color: white !important;
         }
         .stButton > button {
             background-color: #FDC82F;
