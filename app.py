@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import smtplib
@@ -9,11 +8,20 @@ from datetime import datetime
 # إعداد الصفحة
 st.set_page_config(page_title="إرسال دعوات المقابلات تلقائياً - شركة تموين الشرق", layout="centered")
 
-# خلفية صفراء غامقة
+# خلفية برتقالي فاتح + دخان أزرق ملكي (استبدال الخلفية فقط)
 st.markdown("""
     <style>
         .stApp {
-            background-color: #FDC82F !important;
+            background:
+                radial-gradient(at 20% 30%, rgba(26, 35, 126, 0.18) 0%, rgba(26, 35, 126, 0) 40%),
+                radial-gradient(at 80% 70%, rgba(26, 35, 126, 0.15) 0%, rgba(26, 35, 126, 0) 45%),
+                linear-gradient(135deg,
+                    rgba(255, 183, 77, 0.95) 0%,
+                    rgba(255, 204, 128, 0.95) 40%,
+                    rgba(26, 35, 126, 0.45) 100%
+                );
+            background-attachment: fixed;
+            background-size: cover;
         }
     </style>
 """, unsafe_allow_html=True)
